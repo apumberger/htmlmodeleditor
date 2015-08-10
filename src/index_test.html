@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>ModelEditor v0.1</title>
+    <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
+
+    <script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/fabric.js/1.4.0/fabric.min.js"></script>
+    <style type="text/css">
+        .canvas
+        {
+            border-style: solid;
+            border-width: 1px;
+        }
+        .hidden
+        {
+            display: none;
+        }
+    </style>
+  </head>
+  <script src='node.js'></script>
+  <script src='canvas.js'></script>
+  <body>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+    <script src='js/bootstrap.min.js'></script>
+
+<!-- double click support -->
+   <script type="text/javascript">
+        fabric = (function(f) { var nativeOn = f.on; var dblClickSubscribers = []; var nativeCanvas = f.Canvas;   f.Canvas = (function(domId, options) { var canvasDomElement = document.getElementById(domId); var c = new nativeCanvas(domId, options);   c.dblclick = function(handler) { dblClickSubscribers.push(handler) };   canvasDomElement.nextSibling.ondblclick = function(ev){ for(var i = 0; i < dblClickSubscribers.length; i++) { console.log(ev); dblClickSubscribers[i]({ e :ev }); } }; return c; });   return f; }(fabric)); 
+    </script>
+
+
+
+<!-- Bootstrap Modals -->
+<!-- About -->
+
+<div id='aboutModal' class="modal fade" >
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title">About</h4>
+      </div>
+      <div class="modal-body">
+        <p>ModelEditor v0.1</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+<!-- Node -->
+
+<div id="newNodeModal" class="modal fade">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <!--form-->
+            <form class = "form-horizontal" id="nodeform" method="post" action="javascript:newNode()" role="form">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 class="modal-title">New/Edit Node</h4>
+                </div>
+                <div class="modal-body">
+                    <p>
+                        Please enter the node name.
+                    </p>
+                    <br/>
+
+                    <div class="form-group">
+
+                        <div class="col-lg-12">
+                            <label class="control-label" for="nodename">Name</label>
+                            <input type="text" class="form-control required" id="nodename" name="nodename">
+                        </div>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    <button id="myFormSubmit" class="btn btn-primary">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- -->
+
+<!-- Bootstrap navbar -->
+<nav class="navbar navbar-default">
+  <div class="container-fluid">
+    <!-- Brand and toggle get grouped for better mobile display -->
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="#">ModelEditor</a>
+    </div>
+
+    <!-- Collect the nav links, forms, and other content for toggling -->
+    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+      <ul class="nav navbar-nav">
+        <li><a href='javascript:newNodeDialoge()'>New Node</a></li>
+        <li><a href='javascript:newMessage()'>New Message</a></li> 
+        <li class="dropdown">
+          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">More<span class="caret"></span></a>
+          <ul class="dropdown-menu">
+<!--
+            <li><a href="#">Action</a></li>
+            <li role="separator" class="divider"></li>
+-->
+            <li><a href="javascript:clearCanvas()">Clear Canvas</a></li>
+          </ul>
+        </li>
+         <li><a href='javascript:about()'>About?</a></li>
+      </ul>
+      <form class="navbar-form navbar-left" role="search">
+        <div class="form-group">
+          <input type="text" class="form-control" placeholder="Search">
+        </div>
+        <button type="submit" class="btn btn-default">Submit</button>
+      </form>
+    </div><!-- /.navbar-collapse -->
+  </div><!-- /.container-fluid -->
+</nav>
+<!-- end Bootstrap navbar -->
+
+<!-- Canvas -->
+       <div id="nocanvas" class="hidden">
+        <p>
+            Canvas is not supported by your browser.</p>
+        <p>
+            Go to <a href="http://caniuse.com/canvas">http://caniuse.com/canvas</a> to see which
+            browsers support Canvas.</p>
+    </div>
+    <canvas id="myCanvas" class="canvas"></canvas>
+    <script type="text/javascript">
+        function isCanvasSupported() {
+            var elem = document.createElement('canvas');
+            return !!(elem.getContext && elem.getContext('2d'));
+        }
+
+        if (!isCanvasSupported()) {
+            document.getElementById('nocanvas').className = '';
+            document.getElementById('myCanvas').className = 'hidden';
+        }
+        else {
+            // Constants
+            var canvasHeight = 580;
+            var canvasWidth = 865;
+
+            var canvas = new fabric.Canvas('myCanvas');
+            canvas.setHeight(canvasHeight);
+            canvas.setWidth(canvasWidth);
+
+            canvas.on('object:modified', function (e) {
+                var obj = e.target;
+                var rect = obj.getBoundingRect();
+
+                if (rect.left < 0
+                  || rect.top < 0
+                  || rect.left + rect.width > canvas.getWidth()
+                  || rect.top + rect.height > canvas.getHeight()) {
+                    if (obj.getAngle() != obj.originalState.angle) {
+                        obj.setAngle(obj.originalState.angle);
+                    }
+                    else {
+                        obj.setTop(obj.originalState.top);
+                        obj.setLeft(obj.originalState.left);
+                        obj.setScaleX(obj.originalState.scaleX);
+                        obj.setScaleY(obj.originalState.scaleY);
+                    }
+                    obj.setCoords();
+                }
+            });
+
+(function() {
+  // var canvas = this.__canvas = new fabric.Canvas('c', { selection: false });
+  fabric.Object.prototype.originX = fabric.Object.prototype.originY = 'center';
+
+  function makeRect(left, top, line1, line2, line3, line4) {
+    var c = new fabric.Rect({
+      left: left,
+      top: top,
+      width: 150,
+      height: 50,
+      strokeWidth: 5,
+      fill: '#fff',
+      stroke: '#666'
+    });
+    c.hasControls = c.hasBorders = false;
+
+    c.line1 = line1;
+
+    return c;
+  }
+
+  function makeLine(coords) {
+    return new fabric.Line(coords, {
+      fill: 'red',
+      stroke: 'red',
+      strokeWidth: 5,
+      selectable: false
+    });
+  }
+
+  var line = makeLine([ 250, 125, 250, 175 ]);
+
+  canvas.add(line);
+
+  canvas.add(
+    makeRect(line.get('x1'), line.get('y1'), null, line),
+    makeRect(line.get('x2'), line.get('y2'), line)
+  );
+
+  canvas.on('object:moving', function(e) {
+    var p = e.target;
+    p.line1 && p.line1.set({ 'x2': p.left, 'y2': p.top });
+    p.line2 && p.line2.set({ 'x1': p.left, 'y1': p.top });
+    p.line3 && p.line3.set({ 'x1': p.left, 'y1': p.top });
+    p.line4 && p.line4.set({ 'x1': p.left, 'y1': p.top });
+    canvas.renderAll();
+  });
+})();
+
+        }
+    </script>
+<!-- -->
+</body>
+</html>
+

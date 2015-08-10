@@ -48,6 +48,10 @@
     }
 
     function newNode () {
+      //make X and Y coordinates center
+      fabric.Object.prototype.originX = fabric.Object.prototype.originY = 'center';
+
+
       console.log('Enter newNode method');
       console.log(bNewNode);
       var nodeName = null;
@@ -63,6 +67,21 @@
       $('#nodename').val('');
 
       if (bNewNode) {
+        var maxTop = 0;
+
+        var allObjects = canvas.getObjects();
+        allObjects.forEach(function(object) {
+          if (object.top > maxTop) {
+            maxTop = object.top;
+          }
+        });
+
+        if (maxTop == 0) {
+          maxTop = 100;
+        }
+        else {
+          maxTop = maxTop + 70;
+        }
   /*
         var text = new fabric.IText(name + '\n' + name, {
             editable: true,
@@ -83,14 +102,16 @@
   //      canvas.add(text);
 
         var rect = new fabric.Rect({
-            fill: '#eef',
+            fill: '#fff',
             width: 120,
-            height: 60
+            height: 60,
+            strokeWidth: 3,
+            stroke: '#eef'
         });
 
         var group = new fabric.Group([rect, text], {
             left: 150,
-            top: 100
+            top: maxTop
         });
 
         canvas.add(group);
@@ -160,18 +181,87 @@ selectable: false
 
     function makeLine(coords) {
       return new fabric.Line(coords, {
-        fill: 'blue',
-        stroke: 'blue',
+        fill: 'red',
+        stroke: 'red',
         strokeWidth: 3,
-        perPixelTargetFind: true
-  //      selectable: false
-      });
+        selectable: false
+    });
     }
 
     function newMessage () {
-       var line = makeLine([ 250, 125, 250, 175 ]);
+      //make X and Y coordinates center
+      fabric.Object.prototype.originX = fabric.Object.prototype.originY = 'center';
 
-       canvas.add (line);
+      console.log('Enter newMessage method');
+
+      console.log('loop through all objects');
+
+
+      var allObjects = canvas.getObjects();
+      var n=1;
+      var t1=0;
+      var w1=0;
+      var t2=0;
+      var l1=0;
+      var l2=0;
+      var w2=0;
+      var r1;
+      var r2;
+      allObjects.forEach(function(object) {
+        console.log('inObjects');
+        console.log(object.top);
+        console.log(object.left);
+        console.log(object.height);
+        console.log(object.width);
+        console.log(object.type);
+        if (n==1) {
+          t1=object.top;
+          l1=object.left;
+          w1=object.width;
+          r1=object;
+
+        }
+        if (n==2) {
+          t2=object.top;
+          l2=object.left;
+          w2=object.width;
+          r2=object;
+        }
+        n = n+1;
+        // get text from group
+        var objectsInGroup = object.getObjects();
+          objectsInGroup.forEach(function(object) {
+          var oText = object.text;
+          if (oText) {
+            console.log('NodeName ' + oText);
+          }
+         });
+        console.log('Top ' + object.top);
+        console.log('Left ' + object.left);
+  
+      });
+
+      console.log("coordinates");
+      console.log(t1 + " " + l1 + " " + t2 + " " + l2 );
+      // add line between node1 and node2 (test)
+      var line1 = makeLine([ l1, t1, l2, t2 ]);
+
+      canvas.add(line1);
+
+      r1.line1 = line1;
+      r2.line2 = line1;
+
+// this function is for objects moving (needs to be made dynamic)
+    canvas.on('object:moving', function(e) {
+    var p = e.target;
+    p.line1 && p.line1.set({ 'x1': p.left, 'y1': p.top });
+    p.line2 && p.line2.set({ 'x2': p.left, 'y2': p.top });
+    canvas.renderAll();
+  });
+
+//      var line = makeLine([ 250, 125, 250, 175 ]);
+
+//       canvas.add (line);
     }
 
     function clearCanvas() {
@@ -196,6 +286,14 @@ selectable: false
       </div>
       <div class="modal-body">
         <p>ModelEditor v0.1</p>
+        <p></p>
+        <p>Functionality:</p>
+        <p>* add nodes with node names</p>
+        <p>* change node names by double clicking on node</p>
+        <p>* make sure new node doesn't overlay with previously created node</p>
+        <p>* create message between 2 first node names (needs to be made dynamic for more nodes)</p>
+        <p>* move nodes and have message following node position changes</p>
+        <p>* clear canvas</p>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
