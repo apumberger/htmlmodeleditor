@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>ModelEditor v0.1</title>
+    <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
+
+  
+
+  <body>
+   <script type="text/javascript">
+     
+
+    window.onload = function() {
+    var test = {};
+    test.x = 123;
+    alert(test.x);
+    test.y = {x: 12, fun: test2};
+    test.y.fun("asd");
+
+
+    var canvas ={};
+    var nodename = "node1";
+    canvas.node1 = {"name": nodename, printn: node_print};
+
+    console.log(canvas.node1);
+    }
+
+    function node_print(text) {
+        alert(text);
+    } 
+
+    function test2(text) {
+    alert(text);
+    }
+</script>
+</body>
+</html>
+

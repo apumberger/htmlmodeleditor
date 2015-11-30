@@ -1,292 +1,37 @@
 <!DOCTYPE html>
+<!--
+ModelEditor
+Version 0.2
+Author: Andreas Pumberger
+
+TODO:
+* make node names editable
+* make labels editable
+* save JSON to Server
+* load JSON from Server
+
+* fix workaround with maxtop
+* fix focus for node name
+
+-->
 <html>
-  <head>
-    <title>ModelEditor v0.1</title>
+<head>
+	<title>ModelEditor v0.2</title>
+
+    <link rel="stylesheet" href="http://www.jointjs.com/downloads/joint.css" />
     <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
-
-    <script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/fabric.js/1.4.0/fabric.min.js"></script>
-    <style type="text/css">
-        .canvas
-        {
-            border-style: solid;
-            border-width: 1px;
-        }
-        .hidden
-        {
-            display: none;
-        }
-    </style>
-  </head>
-  <script src='node.js'></script>
-  <script src='canvas.js'></script>
-  <body>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+    <script src="http://code.jquery.com/jquery-2.1.4.min.js"></script>
+    <script src="http://www.jointjs.com/js/vendor/lodash/lodash.min.js"></script>
+    <script src="http://www.jointjs.com/js/vendor/backbone/backbone-min.js"></script>
+    <script src="http://www.jointjs.com/downloads/joint.js"></script>
     <script src='js/bootstrap.min.js'></script>
-
-<!-- double click support -->
-   <script type="text/javascript">
-        fabric = (function(f) { var nativeOn = f.on; var dblClickSubscribers = []; var nativeCanvas = f.Canvas;   f.Canvas = (function(domId, options) { var canvasDomElement = document.getElementById(domId); var c = new nativeCanvas(domId, options);   c.dblclick = function(handler) { dblClickSubscribers.push(handler) };   canvasDomElement.nextSibling.ondblclick = function(ev){ for(var i = 0; i < dblClickSubscribers.length; i++) { console.log(ev); dblClickSubscribers[i]({ e :ev }); } }; return c; });   return f; }(fabric)); 
-    </script>
-
-    <script>
-      var bNewNode = true;
-      var bNewMessage = true;
-/*
-      function newNode () {
-        // var myCanvas = new ModelCanvas("myCanvas", 800, 400);
-        // var canvasStr = myCanvas.getCanvas();
-        var node1 = new ModelNode("node1", "myCanvas");
-        var str = myCanvas.getCanvas();
-        alert("Str " +str);
-        var str2 = node1.printNode();
-        document.getElementById("canvas").innerHTML=str+str2;
-    }
-*/
-
-    function newNodeDialoge () {
-      bNewNode = true;
-      $('#newNodeModal').modal('show');
-    }
-
-    function newNode () {
-      //make X and Y coordinates center
-      fabric.Object.prototype.originX = fabric.Object.prototype.originY = 'center';
-
-
-      console.log('Enter newNode method');
-      console.log(bNewNode);
-      var nodeName = null;
-      nodeName = $('#nodename').val();
-      console.log('Name ', nodeName);
-/*
-      $('#newNodeModal').on('hidden', function(){
-        $('#nodename').val('');
-      });
-*/
-
-      $("#newNodeModal").modal('hide'); //hide popup  
-      $('#nodename').val('');
-
-      if (bNewNode) {
-        var maxTop = 0;
-
-        var allObjects = canvas.getObjects();
-        allObjects.forEach(function(object) {
-          if (object.top > maxTop) {
-            maxTop = object.top;
-          }
-        });
-
-        if (maxTop == 0) {
-          maxTop = 100;
-        }
-        else {
-          maxTop = maxTop + 70;
-        }
-  /*
-        var text = new fabric.IText(name + '\n' + name, {
-            editable: true,
-            fontFamily: 'Comic Sans',
-            fontSize: 18,
-            shadow: 'rgba(0,0,0,0.3) 5px 5px 5px'
-        });
-  */
-
-
-        var text = new fabric.IText(nodeName, {
-          fontFamily: 'Comic Sans',
-          fill: '#333',
-          lineHeight: 1.1,
-          fontSize: 14
-        });
-
-  //      canvas.add(text);
-
-        var rect = new fabric.Rect({
-            fill: '#fff',
-            width: 120,
-            height: 60,
-            strokeWidth: 3,
-            stroke: '#eef'
-        });
-
-        var group = new fabric.Group([rect, text], {
-            left: 150,
-            top: maxTop
-        });
-
-        canvas.add(group);
-      }
-      else {
-         var activeObject = canvas.getActiveObject();
-         var objectsInGroup = activeObject.getObjects();
-          objectsInGroup.forEach(function(object) {
-          var oText = object.text;
-          if (oText) {
-            object.set({text: nodeName});
-          }
-         });
-      }
-
-// catch mouse events to get selected object
-      canvas.dblclick(function(e) { 
-        var activeObject = canvas.getActiveObject();
-        // console.log(activeObject);
-        var objectsInGroup = activeObject.getObjects();
-        objectsInGroup.forEach(function(object) {
-          var oText = object.text;
-          if (oText) {
-            console.log(oText);
-// object.enterEditing is causing weird behaivor in IText - disabled for now
-//            object.enterEditing();
-              bNewNode = false;
-              $('#nodename').val(oText);  
-              $("#newNodeModal").modal('show'); //hide popup   
-          }
-         });
-      }); 
-
-/*
-      canvas.on('mouse:dblclick', function(e) {
-        var activeObject = e.target;
-        // console.log(activeObject.get('left'), activeObject.get('top'));
-        var activeObject = canvas.getActiveObject();
-        // console.log(activeObject);
-        var objectsInGroup = activeObject.getObjects();
-        objectsInGroup.forEach(function(object) {
-          if (object.text) {
-            console.log(object.text);
-            object.enterEditing();
-          }
-         });
-       });
-*/
-    }
-
-    
-/*
-function createLineArrow(points) {
- var line = new fabric.Line(points, {
-strokeWidth: 5,
-stroke: '#7db9e8',
-originX: 'center',
-originY: 'center',
-hasControls: false,
-hasBorders: false,
-hasRotatingPoint: false,
-hoverCursor: 'default',
-selectable: false
- });
-
-*/
-
-    function makeLine(coords) {
-      return new fabric.Line(coords, {
-        fill: 'red',
-        stroke: 'red',
-        strokeWidth: 3,
-        selectable: false
-    });
-    }
-
-// Dialoge for new Message
-    function newMessageDialoge () {
-      bNewMessage = true;
-      $('#newMessageModal').modal('show');
-    }
-
-//
-
-    function newMessage () {
-      //make X and Y coordinates center
-      fabric.Object.prototype.originX = fabric.Object.prototype.originY = 'center';
-
-      console.log('Enter newMessage method');
-
-      console.log('loop through all objects');
-
-
-      var allObjects = canvas.getObjects();
-      var n=1;
-      var t1=0;
-      var w1=0;
-      var t2=0;
-      var l1=0;
-      var l2=0;
-      var w2=0;
-      var r1;
-      var r2;
-      allObjects.forEach(function(object) {
-        console.log('inObjects');
-        console.log(object.top);
-        console.log(object.left);
-        console.log(object.height);
-        console.log(object.width);
-        console.log(object.type);
-        if (n==1) {
-          t1=object.top;
-          l1=object.left;
-          w1=object.width;
-          r1=object;
-
-        }
-        if (n==2) {
-          t2=object.top;
-          l2=object.left;
-          w2=object.width;
-          r2=object;
-        }
-        n = n+1;
-        // get text from group
-        var objectsInGroup = object.getObjects();
-          objectsInGroup.forEach(function(object) {
-          var oText = object.text;
-          if (oText) {
-            console.log('NodeName ' + oText);
-          }
-         });
-        console.log('Top ' + object.top);
-        console.log('Left ' + object.left);
-  
-      });
-
-      console.log("coordinates");
-      console.log(t1 + " " + l1 + " " + t2 + " " + l2 );
-      // add line between node1 and node2 (test)
-      var line1 = makeLine([ l1, t1, l2, t2 ]);
-
-      canvas.add(line1);
-
-      r1.line1 = line1;
-      r2.line2 = line1;
-
-// this function is for objects moving (needs to be made dynamic)
-    canvas.on('object:moving', function(e) {
-    var p = e.target;
-    p.line1 && p.line1.set({ 'x1': p.left, 'y1': p.top });
-    p.line2 && p.line2.set({ 'x2': p.left, 'y2': p.top });
-    canvas.renderAll();
-  });
-
-//      var line = makeLine([ 250, 125, 250, 175 ]);
-
-//       canvas.add (line);
-    }
-
-    function clearCanvas() {
-      canvas.clear();
-    }
-
-    function about () {
-      $('#aboutModal').modal('show');
-    }
-	 </script>
-
+</head>
+<body>
 
 <!-- Bootstrap Modals -->
 <!-- About -->
 
-<div id='aboutModal' class="modal fade" >
+<div id='aboutModal' class="modal fade">
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
@@ -294,15 +39,17 @@ selectable: false
         <h4 class="modal-title">About</h4>
       </div>
       <div class="modal-body">
-        <p>ModelEditor v0.1</p>
-        <p></p>
-        <p>Functionality:</p>
-        <p>* add nodes with node names</p>
-        <p>* change node names by double clicking on node</p>
-        <p>* make sure new node doesn't overlay with previously created node</p>
-        <p>* create message between 2 first node names (needs to be made dynamic for more nodes)</p>
-        <p>* move nodes and have message following node position changes</p>
-        <p>* clear canvas</p>
+        <p>ModelEditor v0.2</p>
+        <ul>Functionality:
+        <li>changed framework to jointjs</li>
+        <li>add nodes with node names</li>
+        <li>make sure new node doesn't overlay with previously created node</li>
+        <li>create message between nodes (from to)</li>
+        <li>move nodes and have message following node position changes</li>
+        <li>label and arrow for messages</li>
+        <li>clear model</li>
+        </ul>
+        <p>created by: Andreas Pumberger</p>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
@@ -332,7 +79,7 @@ selectable: false
 
                         <div class="col-lg-12">
                             <label class="control-label" for="nodename">Name</label>
-                            <input type="text" class="form-control required" id="nodename" name="nodename">
+                            <input type="text" class="form-control required" id="nodename" name="nodename" autofocus></input>
                         </div>
                     </div>
 
@@ -359,15 +106,21 @@ selectable: false
                 </div>
                 <div class="modal-body">
                     <p>
-                        Please enter the node name.
+                        Please enter the from- and to-node names and label
                     </p>
                     <br/>
 
                     <div class="form-group">
 
                         <div class="col-lg-12">
-                            <label class="control-label" for="nodename">Name</label>
-                            <input type="text" class="form-control required" id="nodename" name="nodename">
+                            <label class="control-label" for="fromnode">From Node:</label>
+                            <select id="fromnode"></select>
+                            <label class="control-label" for="tonode">To Node:</label>
+                			<select id="tonode"></select>
+                        </div>
+                         <div class="col-lg-12">
+                            <label class="control-label" for="label">Label</label>
+                            <input type="text" class="form-control required" id="label" name="label">
                         </div>
                     </div>
 
@@ -392,14 +145,14 @@ selectable: false
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
-      <a class="navbar-brand" href="#">ModelEditor</a>
+      <a class="navbar-brand" href="#">ModelEditor v0.2</a>
     </div>
 
     <!-- Collect the nav links, forms, and other content for toggling -->
     <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
       <ul class="nav navbar-nav">
         <li><a href='javascript:newNodeDialoge()'>New Node</a></li>
-        <li><a href='javascript:newMessage()'>New Message</a></li> 
+        <li><a href='javascript:newMessageDialoge()'>New Message</a></li> 
         <li class="dropdown">
           <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">More<span class="caret"></span></a>
           <ul class="dropdown-menu">
@@ -407,96 +160,203 @@ selectable: false
             <li><a href="#">Action</a></li>
             <li role="separator" class="divider"></li>
 -->
-            <li><a href="javascript:clearCanvas()">Clear Canvas</a></li>
+            <li><a href="javascript:clearGraph()">Clear Canvas</a></li>
           </ul>
         </li>
          <li><a href='javascript:about()'>About?</a></li>
       </ul>
-      <form class="navbar-form navbar-left" role="search">
-        <div class="form-group">
-          <input type="text" class="form-control" placeholder="Search">
-        </div>
-        <button type="submit" class="btn btn-default">Submit</button>
-      </form>
     </div><!-- /.navbar-collapse -->
   </div><!-- /.container-fluid -->
 </nav>
 <!-- end Bootstrap navbar -->
 
-<!-- Canvas -->
-       <div id="nocanvas" class="hidden">
-        <p>
-            Canvas is not supported by your browser.</p>
-        <p>
-            Go to <a href="http://caniuse.com/canvas">http://caniuse.com/canvas</a> to see which
-            browsers support Canvas.</p>
-    </div>
-    <canvas id="myCanvas" class="canvas"></canvas>
-    <script type="text/javascript">
-        function isCanvasSupported() {
-            var elem = document.createElement('canvas');
-            return !!(elem.getContext && elem.getContext('2d'));
-        }
+<!-- id for Model -->
+<div id="myModel"></div>
 
-        if (!isCanvasSupported()) {
-            document.getElementById('nocanvas').className = '';
-            document.getElementById('myCanvas').className = 'hidden';
-        }
-        else {
-            // Constants
-            var canvasHeight = 580;
-            var canvasWidth = 865;
+	<script type="text/javascript">
 
-            var canvas = new fabric.Canvas('myCanvas');
-            canvas.setHeight(canvasHeight);
-            canvas.setWidth(canvasWidth);
+	    $('#newNodeModal').on('show.bs.modal', function () {
+   			 $('#nodename').focus();
+		})
 
-            canvas.on('object:modified', function (e) {
-                var obj = e.target;
-                var rect = obj.getBoundingRect();
+		var bNewNode = true;
+		var bNewMessage = true;
 
-                if (rect.left < 0
-                  || rect.top < 0
-                  || rect.left + rect.width > canvas.getWidth()
-                  || rect.top + rect.height > canvas.getHeight()) {
-                    if (obj.getAngle() != obj.originalState.angle) {
-                        obj.setAngle(obj.originalState.angle);
-                    }
-                    else {
-                        obj.setTop(obj.originalState.top);
-                        obj.setLeft(obj.originalState.left);
-                        obj.setScaleX(obj.originalState.scaleX);
-                        obj.setScaleY(obj.originalState.scaleY);
-                    }
-                    obj.setCoords();
-                }
-            });
+		var maxTop = 10;
+		
+		var graph = new joint.dia.Graph;
 
-/*
-            var name = "Node1";
+	   	var paper = new joint.dia.Paper({
+	        el: $('#myModel'),
+	        width: 800,
+	        height: 400,
+	        model: graph,
+	        gridSize: 1
+    	});
 
-            var text = new fabric.Text(name + '\n' + name, {
-                fontFamily: 'Comic Sans',
-                fontSize: 18,
-                shadow: 'rgba(0,0,0,0.3) 5px 5px 5px'
-            });
+    	var model = {model : myModel, nodes:[],links:{}};
 
-            var rect = new fabric.Rect({
-                fill: '#eef',
-                width: 120,
-                height: 60
-            });
 
-            var group = new fabric.Group([rect, text], {
-                left: 150,
-                top: 100
-            });
 
-            canvas.add(group);
-*/
-        }
-    </script>
-<!-- -->
+
+		function newNodeDialoge () {
+	      bNewNode = true;
+
+	      $('#newNodeModal').modal('show');
+	      $('#nodename').focus();
+
+	      //document.getElementById("nodename").focus();
+    	}
+
+    	function newNode () {
+	      //make X and Y coordinates center
+	      // fabric.Object.prototype.originX = fabric.Object.prototype.originY = 'center';
+
+
+	      console.log('Enter newNode method');
+	      console.log(bNewNode);
+	      var nodeName = null;
+	      nodeName = $('#nodename').val();
+	      console.log('Name ', nodeName);
+
+	      $("#newNodeModal").modal('hide'); //hide popup  
+	      $('#nodename').val('');
+
+	      if (bNewNode) {
+	      	console.log('in new node branch');
+
+	        if (maxTop == 0) {
+	          maxTop = 10;
+	        }
+	        else {
+	          maxTop = maxTop + 70;
+	        }
+
+	    	var rect = new joint.shapes.basic.Rect({
+	        	position: { x: 100, y: maxTop },
+	        	size: { width: 100, height: 30 },
+	        	attrs: { rect: { fill: 'blue' }, text: { text: nodeName, fill: 'white' } }
+	    	});
+
+	    	// handle event for change position of nodes
+
+	    	rect.on('change:position', function(element) {
+    			console.log(element.id, ':', element.get('position'));
+			});
+
+			//
+
+	    	console.log('add node');
+
+	    	// add Node to JSON model
+	    	var nodes = model.nodes;
+	    	nodeID = rect.id;
+	    	var item = {"nodeID" : nodeID, "nodeName" : nodeName, "position" : {x : maxTop, y : 30}};
+	    	nodes.push(item);
+	    	$.extend(model.nodes,nodes);
+	    	
+	    	console.log(model);
+	        graph.addCells([rect]);
+	      }
+	      else {
+	      	console.log('not new node');
+	/*
+	         var activeObject = canvas.getActiveObject();
+	         var objectsInGroup = activeObject.getObjects();
+	          objectsInGroup.forEach(function(object) {
+	          var oText = object.text;
+	          if (oText) {
+	            object.set({text: nodeName});
+	          }
+	         });
+	*/
+	      }
+
+	  }
+
+	   function newMessageDialoge() {
+	      console.log('newMessageDIaloge');
+
+	      getNodeNames('tonode');
+	      getNodeNames('fromnode');
+
+	      $('#newMessageModal').modal('show');
+	    }
+
+	    function newMessage() {
+	    	console.log('NewMessage');
+
+	    	var fromNode = $('#fromnode').val();
+	      	console.log('FromNode: ', fromNode);
+
+	      	var toNode = $('#tonode').val();
+	      	console.log('ToNode: ', toNode);
+
+	      	var label = $('#label').val();
+	      	console.log('label: ', label);
+
+
+	      	var link = new joint.dia.Link({
+    		source: { id: fromNode },
+    		target: { id: toNode },
+    		attrs: {
+//        		'.marker-source': { fill: 'red', stroke: 'black', d: 'M 10 0 L 0 5 L 10 10 z'},
+        		'.marker-target': { fill: 'yellow', stroke: 'black', d: 'M 10 0 L 0 5 L 10 10 z' }
+    		},
+    		labels: [
+        		{ position: 0.5, attrs: { text: { text: label } } }
+   			 ]
+    		});
+
+	      	graph.addCells([link]);
+
+    		//
+
+    		$("#newMessageModal").modal('hide'); //hide popup  
+    		$('#label').val('');
+
+	    }
+
+	    function clearGraph() {
+	      graph.clear();
+	    }
+
+
+		function about () {
+			$('#aboutModal').modal('show');
+	    }
+
+//================== HELPER FUNCTIONS
+
+		function getNodeNames (referenceName) {
+			console.log('in getNodeNames for ' + referenceName);
+
+			removeOptions(referenceName);
+
+			var data = model.nodes;
+		    var element = document.getElementById(referenceName);
+
+
+
+			for (i=0; i < data.length; i++) {
+				var opt = document.createElement('option');
+    			opt.innerHTML = data[i].nodeName;
+    			opt.value = data[i].nodeID;
+    			console.log(data[i].nodeID);
+    			element.appendChild(opt);
+			}
+		}
+
+		function removeOptions(referenceName)
+		{
+    		var i;
+    		var element = document.getElementById(referenceName);
+    		for(i=element.options.length-1;i>=0;i--)
+    		{
+        		element.remove(i);
+    		}
+		}
+
+	</script>
 </body>
-</html>
 
