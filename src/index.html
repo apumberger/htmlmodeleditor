@@ -12,7 +12,6 @@ TODO:
 
 * fix workaround with maxtop
 * fix focus for node name
-
 -->
 <html>
 <head>
@@ -48,6 +47,7 @@ TODO:
         <li>move nodes and have message following node position changes</li>
         <li>label and arrow for messages</li>
         <li>clear model</li>
+        <li>tested with Google Chrome</li>
         </ul>
         <p>created by: Andreas Pumberger</p>
       </div>
@@ -179,6 +179,10 @@ TODO:
    			 $('#nodename').focus();
 		})
 
+
+        var browserwidth = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
+        var browserheight = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
+
 		var bNewNode = true;
 		var bNewMessage = true;
 
@@ -188,8 +192,8 @@ TODO:
 
 	   	var paper = new joint.dia.Paper({
 	        el: $('#myModel'),
-	        width: 800,
-	        height: 400,
+	        width: browserwidth,
+	        height: browserheight,
 	        model: graph,
 	        gridSize: 1
     	});
