@@ -1,12 +1,13 @@
 <!DOCTYPE html>
 <!--
 ModelEditor
-Version 0.2
+Version 0.3
 Author: Andreas Pumberger
 
 TODO:
 * make node names editable
 * make labels editable
+* node and link positions in JSON model
 * save JSON to Server
 * load JSON from Server
 
@@ -15,10 +16,13 @@ TODO:
 -->
 <html>
 <head>
-	<title>ModelEditor v0.2</title>
+	<title>ModelEditor v0.3</title>
 
+    <link rel="stylesheet" type="text/css" href="css/modeleditor.css"/>
     <link rel="stylesheet" href="http://www.jointjs.com/downloads/joint.css" />
     <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
+
+    <script src="js/modeleditor.js"></script>
     <script src="http://code.jquery.com/jquery-2.1.4.min.js"></script>
     <script src="http://www.jointjs.com/js/vendor/lodash/lodash.min.js"></script>
     <script src="http://www.jointjs.com/js/vendor/backbone/backbone-min.js"></script>
@@ -27,8 +31,7 @@ TODO:
 </head>
 <body>
 
-<!-- Bootstrap Modals -->
-<!-- About -->
+<!-- Bootstrap About Modal-->
 
 <div id='aboutModal' class="modal fade">
   <div class="modal-dialog">
@@ -38,7 +41,7 @@ TODO:
         <h4 class="modal-title">About</h4>
       </div>
       <div class="modal-body">
-        <p>ModelEditor v0.2</p>
+        <p>ModelEditor v0.3</p>
         <ul>Functionality:
         <li>changed framework to jointjs</li>
         <li>add nodes with node names</li>
@@ -58,81 +61,6 @@ TODO:
   </div><!-- /.modal-dialog -->
 </div><!-- /.modal -->
 
-<!-- Node Dialoge -->
-
-<div id="newNodeModal" class="modal fade">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <!--form-->
-            <form class = "form-horizontal" id="nodeform" method="post" action="javascript:newNode()" role="form">
-                <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                    <h4 class="modal-title">New/Edit Node</h4>
-                </div>
-                <div class="modal-body">
-                    <p>
-                        Please enter the node name.
-                    </p>
-                    <br/>
-
-                    <div class="form-group">
-
-                        <div class="col-lg-12">
-                            <label class="control-label" for="nodename">Name</label>
-                            <input type="text" class="form-control required" id="nodename" name="nodename" autofocus></input>
-                        </div>
-                    </div>
-
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-                    <button id="myFormSubmit" class="btn btn-primary">Save</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
-<!-- Message Dialoge -->
-
-<div id="newMessageModal" class="modal fade">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <!--form-->
-            <form class = "form-horizontal" id="messageform" method="post" action="javascript:newMessage()" role="form">
-                <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                    <h4 class="modal-title">New/Edit Message</h4>
-                </div>
-                <div class="modal-body">
-                    <p>
-                        Please enter the from- and to-node names and label
-                    </p>
-                    <br/>
-
-                    <div class="form-group">
-
-                        <div class="col-lg-12">
-                            <label class="control-label" for="fromnode">From Node:</label>
-                            <select id="fromnode"></select>
-                            <label class="control-label" for="tonode">To Node:</label>
-                			<select id="tonode"></select>
-                        </div>
-                         <div class="col-lg-12">
-                            <label class="control-label" for="label">Label</label>
-                            <input type="text" class="form-control required" id="label" name="label">
-                        </div>
-                    </div>
-
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-                    <button id="myFormSubmit" class="btn btn-primary">Save</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
 
 <!-- Bootstrap navbar -->
 <nav class="navbar navbar-default">
@@ -145,14 +73,14 @@ TODO:
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
-      <a class="navbar-brand" href="#">ModelEditor v0.2</a>
+      <a class="navbar-brand" href="#">ModelEditor v0.3</a>
     </div>
 
     <!-- Collect the nav links, forms, and other content for toggling -->
     <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
       <ul class="nav navbar-nav">
-        <li><a href='javascript:newNodeDialoge()'>New Node</a></li>
-        <li><a href='javascript:newMessageDialoge()'>New Message</a></li> 
+        <li><a href='javascript:inspector_newNode()'>New Node</a></li>
+        <li><a href='javascript:inspector_newMessage()'>New Message</a></li> 
         <li class="dropdown">
           <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">More<span class="caret"></span></a>
           <ul class="dropdown-menu">
@@ -160,6 +88,9 @@ TODO:
             <li><a href="#">Action</a></li>
             <li role="separator" class="divider"></li>
 -->
+             <li><a href="javascript:loadModel()">Load Model</a></li>
+            <li><a href="javascript:saveModel()">Save Model</a></li>
+            <li role="separator" class="divider"></li>
             <li><a href="javascript:clearGraph()">Clear Canvas</a></li>
           </ul>
         </li>
@@ -170,18 +101,16 @@ TODO:
 </nav>
 <!-- end Bootstrap navbar -->
 
-<!-- id for Model -->
-<div id="myModel"></div>
+<div class="parent">
+    <div class="paper" id="paper"></div>
+    <div class="inspector" id="inspector"></div>
+    <!-- <div class="inspector"><script>javascript:inspector_general()</script></div> -->
+    <div class="clear"></div>
+</div>
 
-	<script type="text/javascript">
-
-	    $('#newNodeModal').on('show.bs.modal', function () {
-   			 $('#nodename').focus();
-		})
-
-
-        var browserwidth = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
-        var browserheight = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
+    <script type="text/javascript">
+        // var browserwidth = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
+        // var browserheight = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
 
 		var bNewNode = true;
 		var bNewMessage = true;
@@ -191,176 +120,39 @@ TODO:
 		var graph = new joint.dia.Graph;
 
 	   	var paper = new joint.dia.Paper({
-	        el: $('#myModel'),
-	        width: browserwidth,
-	        height: browserheight,
+	        el: $('#paper'),
+	        width: 600,
+	        height: 800,
 	        model: graph,
 	        gridSize: 1
     	});
 
-    	var model = {model : myModel, nodes:[],links:{}};
+//        paper.on('cell:pointerdown', 
+// /           function(cellView, evt, x, y) { 
+//                alert('cell view ' + cellView.model.id + ' was clicked'); 
+//            }
+//        );
 
+// listen for click event to edit elements of the graph
 
+        paper.on('cell:pointerclick', 
+            function(cellView, evt, x, y) { 
+                console.log('cell view ' + cellView.model.id + ' was clicked'); 
+                if (cellView.model instanceof joint.shapes.basic.Rect) {
+                    console.log("RECT");
+                    inspector_newNode(cellView.model);
+                } else if (cellView.model instanceof joint.dia.Link) {
+                    console.log("LINK");
+                    inspector_newMessage(cellView.model);
+                } else {
+                  console.log("Element not handled at the moment...")
+                }
+            }
+        );
 
+        createNewModel('model');
 
-		function newNodeDialoge () {
-	      bNewNode = true;
-
-	      $('#newNodeModal').modal('show');
-	      $('#nodename').focus();
-
-	      //document.getElementById("nodename").focus();
-    	}
-
-    	function newNode () {
-	      //make X and Y coordinates center
-	      // fabric.Object.prototype.originX = fabric.Object.prototype.originY = 'center';
-
-
-	      console.log('Enter newNode method');
-	      console.log(bNewNode);
-	      var nodeName = null;
-	      nodeName = $('#nodename').val();
-	      console.log('Name ', nodeName);
-
-	      $("#newNodeModal").modal('hide'); //hide popup  
-	      $('#nodename').val('');
-
-	      if (bNewNode) {
-	      	console.log('in new node branch');
-
-	        if (maxTop == 0) {
-	          maxTop = 10;
-	        }
-	        else {
-	          maxTop = maxTop + 70;
-	        }
-
-	    	var rect = new joint.shapes.basic.Rect({
-	        	position: { x: 100, y: maxTop },
-	        	size: { width: 100, height: 30 },
-	        	attrs: { rect: { fill: 'blue' }, text: { text: nodeName, fill: 'white' } }
-	    	});
-
-	    	// handle event for change position of nodes
-
-	    	rect.on('change:position', function(element) {
-    			console.log(element.id, ':', element.get('position'));
-			});
-
-			//
-
-	    	console.log('add node');
-
-	    	// add Node to JSON model
-	    	var nodes = model.nodes;
-	    	nodeID = rect.id;
-	    	var item = {"nodeID" : nodeID, "nodeName" : nodeName, "position" : {x : maxTop, y : 30}};
-	    	nodes.push(item);
-	    	$.extend(model.nodes,nodes);
-	    	
-	    	console.log(model);
-	        graph.addCells([rect]);
-	      }
-	      else {
-	      	console.log('not new node');
-	/*
-	         var activeObject = canvas.getActiveObject();
-	         var objectsInGroup = activeObject.getObjects();
-	          objectsInGroup.forEach(function(object) {
-	          var oText = object.text;
-	          if (oText) {
-	            object.set({text: nodeName});
-	          }
-	         });
-	*/
-	      }
-
-	  }
-
-	   function newMessageDialoge() {
-	      console.log('newMessageDIaloge');
-
-	      getNodeNames('tonode');
-	      getNodeNames('fromnode');
-
-	      $('#newMessageModal').modal('show');
-	    }
-
-	    function newMessage() {
-	    	console.log('NewMessage');
-
-	    	var fromNode = $('#fromnode').val();
-	      	console.log('FromNode: ', fromNode);
-
-	      	var toNode = $('#tonode').val();
-	      	console.log('ToNode: ', toNode);
-
-	      	var label = $('#label').val();
-	      	console.log('label: ', label);
-
-
-	      	var link = new joint.dia.Link({
-    		source: { id: fromNode },
-    		target: { id: toNode },
-    		attrs: {
-//        		'.marker-source': { fill: 'red', stroke: 'black', d: 'M 10 0 L 0 5 L 10 10 z'},
-        		'.marker-target': { fill: 'yellow', stroke: 'black', d: 'M 10 0 L 0 5 L 10 10 z' }
-    		},
-    		labels: [
-        		{ position: 0.5, attrs: { text: { text: label } } }
-   			 ]
-    		});
-
-	      	graph.addCells([link]);
-
-    		//
-
-    		$("#newMessageModal").modal('hide'); //hide popup  
-    		$('#label').val('');
-
-	    }
-
-	    function clearGraph() {
-	      graph.clear();
-	    }
-
-
-		function about () {
-			$('#aboutModal').modal('show');
-	    }
-
-//================== HELPER FUNCTIONS
-
-		function getNodeNames (referenceName) {
-			console.log('in getNodeNames for ' + referenceName);
-
-			removeOptions(referenceName);
-
-			var data = model.nodes;
-		    var element = document.getElementById(referenceName);
-
-
-
-			for (i=0; i < data.length; i++) {
-				var opt = document.createElement('option');
-    			opt.innerHTML = data[i].nodeName;
-    			opt.value = data[i].nodeID;
-    			console.log(data[i].nodeID);
-    			element.appendChild(opt);
-			}
-		}
-
-		function removeOptions(referenceName)
-		{
-    		var i;
-    		var element = document.getElementById(referenceName);
-    		for(i=element.options.length-1;i>=0;i--)
-    		{
-        		element.remove(i);
-    		}
-		}
-
+        inspector_general();
 	</script>
 </body>
 

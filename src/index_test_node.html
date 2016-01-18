@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<!--
+Nodejs test script 
+Author: Andreas Pumberger
+
+TODO:
+
+-->
+<html>
+<head>
+    <title>NodeJS Test script</title>
+
+    <script src="http://code.jquery.com/jquery-1.10.2.js"></script>
+    <script src="http://code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+</head>
+<body>
+
+    <button id="ajax">ajax call</button>
+    <button id="json">json</button>
+
+
+
+    <script type="text/javascript">
+
+    $('#json').click(function(){ 
+        alert('json');
+         $.getJSON("http://localhost:8082/save",
+         function(data) {
+            alert(data);         
+          });   
+    });
+
+    $('#ajax').click(function(){ 
+        alert('ajax');
+         $.ajax({ 
+             type: "POST",
+             dataType: "json",
+             data: '{name: "name"}',
+             url: "http://localhost:8082/save",
+             success: function(data){        
+                alert(data);
+             },
+             error: function (e) {
+                    alert("Error calling REST function" + e)
+                }
+         });
+    });
+
+
+/*
+    RESTurl = "http://localhost:6666/save";
+    $.ajax({
+                type: 'POST',
+                url: RESTurl,
+                contentType: 'application/json',
+                dataType: "json",
+                data: '{name: "name"}',
+                success: function (data, status, jqXHR) {
+                    //document.getElementById('ConfirmationText').innerHTML = "Successfully created booking.\nYour customer ID is " + data.custId + "; Please bring this ID with you when collecting the bike.";
+                    //document.getElementById('ConfirmationBox').style.visibility = "";
+                    console.log("Sucessfully called REST function");
+                },
+                error: function (e) {
+                    alert("Error calling REST function" + e)
+                }
+            });
+
+
+            $.ajax({
+                type: 'POST',
+                url: RESTurl,
+                contentType: 'application/json',
+                dataType: "json",
+                data: mydata,
+                success: function (data, status, jqXHR) {
+                    document.getElementById('ConfirmationText').innerHTML = "Successfully created booking.\nYour customer ID is " + data.custId + "; Please bring this ID with you when collecting the bike.";
+                    document.getElementById('ConfirmationBox').style.visibility = "";
+                    console.log("Sucessfully called REST function");
+                },
+                error: function (e) {
+                    alert("Error calling REST function" + e)
+                }
+            });
+
+*/
+</script>
+
+</body>

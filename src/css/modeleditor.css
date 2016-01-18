@@ -1,0 +1,34 @@
+/*!
+ * ModelEditor v0.3
+ * Author: Andreas Pumberger
+ *
+ */
+
+<style>
+.parent {
+  clear: both;
+}
+
+.paper {
+  position: absolute;
+  float: left;
+  margin: 0 1.5%;
+  width: 70%;
+  border: 2px solid red;
+}
+
+.inspector {
+  position: relative;
+  float: right;
+  margin: 0 1.5%; 
+  width: 25%;
+  background-color: LightSkyBlue;
+/* background: #ccc url(../images/inspector.png) repeat-y 100% 0; */
+} 
+
+.clear {
+  clear: both;
+}
+
+
+</style>
