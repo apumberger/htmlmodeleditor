@@ -5,14 +5,13 @@ Version 0.3
 Author: Andreas Pumberger
 
 TODO:
-* make node names editable
 * make labels editable
 * node and link positions in JSON model
-* save JSON to Server
-* load JSON from Server
 
 * fix workaround with maxtop
 * fix focus for node name
+* fix workaround for global variables in modeleditor.js
+* load ini (version and server adress)
 -->
 <html>
 <head>
@@ -50,6 +49,8 @@ TODO:
         <li>move nodes and have message following node position changes</li>
         <li>label and arrow for messages</li>
         <li>clear model</li>
+        <li>save Model to Server</li>
+        <li>load Model from Server</li>
         <li>tested with Google Chrome</li>
         </ul>
         <p>created by: Andreas Pumberger</p>
@@ -92,6 +93,8 @@ TODO:
             <li><a href="javascript:saveModel()">Save Model</a></li>
             <li role="separator" class="divider"></li>
             <li><a href="javascript:clearGraph()">Clear Canvas</a></li>
+            <li role="separator" class="divider"></li>
+            <li><a href="javascript:exportModel()">Export Model</a></li>
           </ul>
         </li>
          <li><a href='javascript:about()'>About?</a></li>

@@ -375,6 +375,8 @@ function newNodeDialoge () {
     console.log('in saveModel...');
     console.log('json: ', jsonString);
 
+    // REST call to NodeJS Server
+
      $.ajax({ 
          type: "POST",
          contentType: "application/json; charset=utf-8",
@@ -382,12 +384,33 @@ function newNodeDialoge () {
          data: jsonString,
          url: "http://pumstinyc.dyndns.org:8082/save",
          success: function(data){        
-            alert(data);
+            alert("Model successfully saved to Server!");
          },
          error: function (e) {
                 alert("Error calling REST function" + e)
             }
      });
+  }
+
+  function exportModel () {
+    var jsonString = JSON.stringify(graph);
+    console.log('in exportModel...');
+    console.log('json: ', jsonString);
+
+    var cells = graph.getCells();
+
+    for (i=0; i<cells.length; i++) {
+      console.log("Cell: ", cells[i]);
+    }
+
+    var elements = graph.getElements();
+
+    for (i=0; i<elements.length; i++) {
+      console.log("Element: ", elements[i]);
+
+      console.log("NodeName",elements[i]['attributes']['attrs']['text']['text']); 
+    }
+
   }
 
 
@@ -396,12 +419,10 @@ function newNodeDialoge () {
     function getNodeNames (referenceName) {
       console.log('in getNodeNames for ' + referenceName);
 
-      //removeOptions(referenceName);
+/*
 
       var data = model.nodes;
-        var element = document.getElementById(referenceName);
-
-
+      var element = document.getElementById(referenceName);
 
       for (i=0; i < data.length; i++) {
         var opt = document.createElement('option');
@@ -409,6 +430,24 @@ function newNodeDialoge () {
           opt.value = data[i].nodeID;
           console.log(data[i].nodeID);
           element.appendChild(opt);
+      }
+*/
+
+      //getElements returns just Nodes and no Links
+      var elements = graph.getElements();
+      var dropdown = document.getElementById(referenceName);
+
+      for (i=0; i<elements.length; i++) {
+        console.log("Element: ", elements[i]);
+        var nodeName = elements[i]['attributes']['attrs']['text']['text'];
+        console.log("NodeName", nodeName); 
+        var nodeID = elements[i]['id'];
+        console.log("NodeID", nodeID); 
+
+        var opt = document.createElement('option');
+          opt.innerHTML = nodeName;
+          opt.value = nodeID;
+          dropdown.appendChild(opt);
       }
     }
 
