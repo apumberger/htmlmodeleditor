@@ -1,10 +1,11 @@
 /*!
- * ModelEditor v0.3
+ * ModelEditor v0.4
  * Author: Andreas Pumberger
  *
  */
 
 <style>
+
 .parent {
   clear: both;
 }
@@ -29,6 +30,11 @@
 .clear {
   clear: both;
 }
+
+
+body { padding-top: 0px; padding-bottom: 0px; }
+
+.navbar { margin-top:0; margin-bottom: 0 }
 
 
 </style>

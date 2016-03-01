@@ -1,12 +1,11 @@
 <!DOCTYPE html>
 <!--
 ModelEditor
-Version 0.3
+Version 0.4
 Author: Andreas Pumberger
 
 TODO:
-* make labels editable
-* node and link positions in JSON model
+* introduce 2 levels for S-BPM model
 
 * fix workaround with maxtop
 * fix focus for node name
@@ -15,18 +14,19 @@ TODO:
 -->
 <html>
 <head>
-	<title>ModelEditor v0.3</title>
+	<title>ModelEditor v0.4</title>
 
-    <link rel="stylesheet" type="text/css" href="css/modeleditor.css"/>
-    <link rel="stylesheet" href="http://www.jointjs.com/downloads/joint.css" />
+    <link rel="stylesheet" type="text/css" href="css/joint.css" />
     <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="css/modeleditor.css"/>
 
-    <script src="js/modeleditor.js"></script>
+   
     <script src="http://code.jquery.com/jquery-2.1.4.min.js"></script>
-    <script src="http://www.jointjs.com/js/vendor/lodash/lodash.min.js"></script>
-    <script src="http://www.jointjs.com/js/vendor/backbone/backbone-min.js"></script>
-    <script src="http://www.jointjs.com/downloads/joint.js"></script>
-    <script src='js/bootstrap.min.js'></script>
+    <script src="js/vendor/lodash.min.js"></script>
+    <script src="js/vendor/backbone-min.js"></script>
+    <script src='js/vendor/bootstrap.min.js'></script>
+    <script src='js/vendor/joint.js'></script>
+    <script src="js/modeleditor.js"></script>
 </head>
 <body>
 
@@ -40,7 +40,7 @@ TODO:
         <h4 class="modal-title">About</h4>
       </div>
       <div class="modal-body">
-        <p>ModelEditor v0.3</p>
+        <p>ModelEditor v0.4</p>
         <ul>Functionality:
         <li>changed framework to jointjs</li>
         <li>add nodes with node names</li>
@@ -51,6 +51,8 @@ TODO:
         <li>clear model</li>
         <li>save Model to Server</li>
         <li>load Model from Server</li>
+        <li>added SBPM: subject interaction diagram</li>
+        <li>added SBPM: subject behavior diagram</li>
         <li>tested with Google Chrome</li>
         </ul>
         <p>created by: Andreas Pumberger</p>
@@ -64,45 +66,9 @@ TODO:
 
 
 <!-- Bootstrap navbar -->
-<nav class="navbar navbar-default">
-  <div class="container-fluid">
-    <!-- Brand and toggle get grouped for better mobile display -->
-    <div class="navbar-header">
-      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
-        <span class="sr-only">Toggle navigation</span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-      </button>
-      <a class="navbar-brand" href="#">ModelEditor v0.3</a>
-    </div>
+<div id='modelmainmenu'></div>
+<div id='modelsubmenu'></div>
 
-    <!-- Collect the nav links, forms, and other content for toggling -->
-    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-      <ul class="nav navbar-nav">
-        <li><a href='javascript:inspector_newNode()'>New Node</a></li>
-        <li><a href='javascript:inspector_newMessage()'>New Message</a></li> 
-        <li class="dropdown">
-          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">More<span class="caret"></span></a>
-          <ul class="dropdown-menu">
-<!--
-            <li><a href="#">Action</a></li>
-            <li role="separator" class="divider"></li>
--->
-             <li><a href="javascript:loadModel()">Load Model</a></li>
-            <li><a href="javascript:saveModel()">Save Model</a></li>
-            <li role="separator" class="divider"></li>
-            <li><a href="javascript:clearGraph()">Clear Canvas</a></li>
-            <li role="separator" class="divider"></li>
-            <li><a href="javascript:exportModel()">Export Model</a></li>
-          </ul>
-        </li>
-         <li><a href='javascript:about()'>About?</a></li>
-      </ul>
-    </div><!-- /.navbar-collapse -->
-  </div><!-- /.container-fluid -->
-</nav>
-<!-- end Bootstrap navbar -->
 
 <div class="parent">
     <div class="paper" id="paper"></div>
@@ -115,47 +81,61 @@ TODO:
         // var browserwidth = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
         // var browserheight = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
 
-		var bNewNode = true;
-		var bNewMessage = true;
+	var maxTop = 10;
+    var graph = new joint.dia.Graph;
 
-		var maxTop = 10;
-		
-		var graph = new joint.dia.Graph;
+    var paper = new joint.dia.Paper({
+          el: $('#paper'),
+          width: 600,
+          height: 800,
+          model: graph,
+          gridSize: 1
+    });
 
-	   	var paper = new joint.dia.Paper({
-	        el: $('#paper'),
-	        width: 600,
-	        height: 800,
-	        model: graph,
-	        gridSize: 1
-    	});
+   
+
+    switchModel(null);
 
 //        paper.on('cell:pointerdown', 
-// /           function(cellView, evt, x, y) { 
+// /           function(cellView, evt, x, y) {  
 //                alert('cell view ' + cellView.model.id + ' was clicked'); 
 //            }
 //        );
 
-// listen for click event to edit elements of the graph
-
-        paper.on('cell:pointerclick', 
+// Subject Behavior Diagram: doubleclick on Subjects
+        paper.on('cell:pointerdblclick', 
             function(cellView, evt, x, y) { 
-                console.log('cell view ' + cellView.model.id + ' was clicked'); 
-                if (cellView.model instanceof joint.shapes.basic.Rect) {
-                    console.log("RECT");
-                    inspector_newNode(cellView.model);
-                } else if (cellView.model instanceof joint.dia.Link) {
-                    console.log("LINK");
-                    inspector_newMessage(cellView.model);
+                console.log('cell view ' + cellView.model.id + ' was double clicked'); 
+                if (cellView.model instanceof joint.shapes.basic.DecoratedRect) {
+                    if (cellView.model.attr('type/text') == 'Subject') {
+                        console.log("SUBJECT --> subject behavior diagram");
+                        switchModel(cellView.model);
+                    }
                 } else {
-                  console.log("Element not handled at the moment...")
+                  console.log("Element not handled at the moment for doubleclick...")
                 }
             }
         );
 
-        createNewModel('model');
 
-        inspector_general();
+// EDIT: listen for one click event to edit elements of the graph
+
+        paper.on('cell:pointerclick', 
+            function(cellView, evt, x, y) { 
+                console.log('cell view ' + cellView.model.id + ' was clicked'); 
+                if (cellView.model instanceof joint.shapes.basic.DecoratedRect) {
+                    console.log("DecoratedRect");
+                    inspector_newElement(cellView.model, null);
+                } else if (cellView.model instanceof joint.dia.Link) {
+                    console.log("LINK");
+                    inspector_newMessage(cellView.model, null);
+                } else {
+                  console.log("Element not handled at the moment for click...")
+                }
+            }
+        );
+
+
 	</script>
 </body>
 
