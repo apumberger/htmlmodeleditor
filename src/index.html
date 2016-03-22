@@ -84,10 +84,16 @@ TODO:
 	var maxTop = 10;
     var graph = new joint.dia.Graph;
 
+    var paperWidth = document.getElementById('paper').offsetWidth;
+
+    var paperHeight = 800;
+
+    console.log("Width x Height: ", paperWidth + " x " + paperHeight);
+
     var paper = new joint.dia.Paper({
           el: $('#paper'),
-          width: 600,
-          height: 800,
+          width: paperWidth,
+          height: paperHeight,
           model: graph,
           gridSize: 1
     });
